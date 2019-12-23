@@ -10,6 +10,7 @@
 #include <cstring>
 #include <cassert>
 #include <optional>
+#include <unordered_set>
 
 #ifdef NDEBUG
 #	define IS_DEBUG_BUILD false
@@ -74,6 +75,7 @@ private:
 	QueueFamilyIndices queueFamilyIndices;
 	VkDevice device;
 	VkQueue graphicsQueue;
+	VkQueue presentQueue;
 public:
 	virtual void run() override
 	{
@@ -439,21 +441,15 @@ private:
 
 	void createLogicalDevice()
 	{
-		float graphicsQueuePriority = 1.0f;
-		VkDeviceQueueCreateInfo graphicsQueueCreateInfo{};
-		graphicsQueueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-		graphicsQueueCreateInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
-		graphicsQueueCreateInfo.queueCount = 1;
-		graphicsQueueCreateInfo.pQueuePriorities = &graphicsQueuePriority;
-
-		VkPhysicalDeviceFeatures wantedFeatures{};
-
 		VkDeviceCreateInfo deviceCreateInfo{};
 		deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 
-		deviceCreateInfo.pQueueCreateInfos = &graphicsQueueCreateInfo;
-		deviceCreateInfo.queueCreateInfoCount = 1;
+		float queuePriority = 1;
+		auto queueCreateInfos = createQueueCreateInfos(&queuePriority);
+		deviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();
+		deviceCreateInfo.queueCreateInfoCount = queueCreateInfos.size();
 
+		VkPhysicalDeviceFeatures wantedFeatures{};
 		deviceCreateInfo.pEnabledFeatures = &wantedFeatures;
 
 		if (enableValidationLayers)
@@ -472,9 +468,35 @@ private:
 		}
 	}
 
+	std::vector<VkDeviceQueueCreateInfo> createQueueCreateInfos(const float* const queuePriority)
+	{
+		std::unordered_set<uint32_t> uniqueQueueFamilyIndices{
+			queueFamilyIndices.graphicsFamily.value(),
+			queueFamilyIndices.presentFamily.value()
+		};
+
+		std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+		queueCreateInfos.reserve(uniqueQueueFamilyIndices.size());
+
+		for (const auto& queueFamilyIndex : uniqueQueueFamilyIndices)
+		{
+			VkDeviceQueueCreateInfo queueCreateInfo{};
+
+			queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+			queueCreateInfo.pQueuePriorities = queuePriority;
+			queueCreateInfo.queueCount = 1;
+			queueCreateInfo.queueFamilyIndex = queueFamilyIndex;
+
+			queueCreateInfos.push_back(queueCreateInfo);
+		}
+
+		return queueCreateInfos;
+	}
+
 	void retrieveQueueHandles()
 	{
 		vkGetDeviceQueue(device, queueFamilyIndices.graphicsFamily.value(), 0, &graphicsQueue);
+		vkGetDeviceQueue(device, queueFamilyIndices.presentFamily.value(), 0, &presentQueue);
 	}
 
 	void loadDeviceFunctions()
