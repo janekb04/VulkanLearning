@@ -63,6 +63,7 @@ private: //static
 		std::optional<uint32_t> computeFamily;
 		std::optional<uint32_t> transferFamily;
 		std::optional<uint32_t> sparseBindingFamily;
+		std::optional<uint32_t> presentFamily;
 	};
 private:
 	GLFWwindow* window;
@@ -375,7 +376,9 @@ private:
 
 	bool isDeviceSuitable(VkPhysicalDevice device, const VkPhysicalDeviceProperties& properties, const VkPhysicalDeviceFeatures& features)
 	{
-		return findQueueFamilies(device).graphicsFamily.has_value();
+		auto queueFamilies = findQueueFamilies(device);
+		return queueFamilies.graphicsFamily.has_value()
+			&& queueFamilies.presentFamily.has_value();
 	}
 
 	QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device)
@@ -390,7 +393,8 @@ private:
 			findQueueFamilyWithCapability(queueFamilies, VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT),
 			findQueueFamilyWithCapability(queueFamilies, VkQueueFlagBits::VK_QUEUE_COMPUTE_BIT),
 			findQueueFamilyWithCapability(queueFamilies, VkQueueFlagBits::VK_QUEUE_TRANSFER_BIT),
-			findQueueFamilyWithCapability(queueFamilies, VkQueueFlagBits::VK_QUEUE_SPARSE_BINDING_BIT)
+			findQueueFamilyWithCapability(queueFamilies, VkQueueFlagBits::VK_QUEUE_SPARSE_BINDING_BIT),
+			findPresentationQueueFamily(device, queueFamilies)
 		};
 	}
 
@@ -411,6 +415,21 @@ private:
 		}
 
 		return index;
+	}
+
+	std::optional<uint32_t> findPresentationQueueFamily(VkPhysicalDevice device, const std::vector<VkQueueFamilyProperties>& queueFamilies)
+	{
+		for (int i = 0; i < queueFamilies.size(); ++i)
+		{
+			VkBool32 presentSupport = false;
+			vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
+			if (presentSupport)
+			{
+				return i;
+			}
+		}
+
+		return std::nullopt;
 	}
 
 	void cacheQueueFamilyIndices()
