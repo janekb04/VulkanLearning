@@ -66,6 +66,10 @@ private: //static
 		std::optional<uint32_t> sparseBindingFamily;
 		std::optional<uint32_t> presentFamily;
 	};
+
+	static inline const std::vector<const char*> deviceExtensions = {
+		VK_KHR_SWAPCHAIN_EXTENSION_NAME
+	};
 private:
 	GLFWwindow* window;
 	VkInstance instance;
@@ -305,7 +309,6 @@ private:
 
 	void pickPhysicalDevice()
 	{
-		//TODO: Query for presenation support
 		auto physicalDevices = findPhysicalDevices();
 		physicalDevice = pickPhysicalDeviceWithHighestScore(physicalDevices);
 	}
@@ -378,9 +381,23 @@ private:
 
 	bool isDeviceSuitable(VkPhysicalDevice device, const VkPhysicalDeviceProperties& properties, const VkPhysicalDeviceFeatures& features)
 	{
+		bool extensionsSupported = checkExtensionSupport(deviceExtensions, getSupportedDeviceExtensions(device));
 		auto queueFamilies = findQueueFamilies(device);
 		return queueFamilies.graphicsFamily.has_value()
-			&& queueFamilies.presentFamily.has_value();
+			&& queueFamilies.presentFamily.has_value()
+			&& extensionsSupported;
+	}
+
+	std::vector<VkExtensionProperties> getSupportedDeviceExtensions(VkPhysicalDevice device)
+	{
+		uint32_t extensionCount = 0;
+		vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+
+		std::vector<VkExtensionProperties> extensions(extensionCount);
+
+		vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, extensions.data());
+
+		return extensions;
 	}
 
 	QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device)
@@ -451,6 +468,9 @@ private:
 
 		VkPhysicalDeviceFeatures wantedFeatures{};
 		deviceCreateInfo.pEnabledFeatures = &wantedFeatures;
+
+		deviceCreateInfo.enabledExtensionCount = deviceExtensions.size();
+		deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
 		if (enableValidationLayers)
 		{
