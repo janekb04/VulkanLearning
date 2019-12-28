@@ -92,6 +92,7 @@ private:
 	VkFormat swapChainImageFormat;
 	VkExtent2D swapChainExtent;
 	std::vector<VkImage> swapChainImages;
+	std::vector<VkImageView> swapChainImageViews;
 public:
 	virtual void run() override
 	{
@@ -126,6 +127,8 @@ private:
 		loadDeviceFunctions();
 		createSwapChain();
 		retrieveSwapChainImageHandles();
+		createSwapChainImageViews();
+		createGraphicsPipeline();
 	}
 
 	void loadGlobalFunctions()
@@ -695,6 +698,47 @@ private:
 		}
 	}
 
+	void createSwapChainImageViews()
+	{
+		for (const auto& image : swapChainImages)
+			swapChainImageViews.push_back(createSwapChainImageView(image));
+	}
+
+	VkImageView createSwapChainImageView(VkImage image)
+	{
+		VkImageViewCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+		createInfo.image = image;
+		createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+		createInfo.format = swapChainImageFormat;
+		createInfo.components = { 
+			VK_COMPONENT_SWIZZLE_IDENTITY,
+			VK_COMPONENT_SWIZZLE_IDENTITY,
+			VK_COMPONENT_SWIZZLE_IDENTITY,
+			VK_COMPONENT_SWIZZLE_IDENTITY
+		};
+		createInfo.subresourceRange = {
+			VK_IMAGE_ASPECT_COLOR_BIT,
+			0,
+			1,
+			0,
+			1
+		};
+
+		VkImageView result;
+		if (vkCreateImageView(device, &createInfo, nullptr, &result) != VK_SUCCESS)
+		{
+			throw std::runtime_error("failed to create image view");
+		}
+		return result;
+	}
+
+	void createGraphicsPipeline()
+	{
+		//TODO: implement
+#error NYI
+	}
+
 	void mainLoop()
 	{
 		while (!glfwWindowShouldClose(window))
@@ -705,6 +749,11 @@ private:
 
 	void cleanup()
 	{
+		for (const auto imageView : swapChainImageViews)
+		{
+			vkDestroyImageView(device, imageView, nullptr);
+		}
+		
 		vkDestroySwapchainKHR(device, swapChain, nullptr);
 
 		vkDestroyDevice(device, nullptr);
