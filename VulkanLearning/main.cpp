@@ -736,7 +736,6 @@ private:
 	void createGraphicsPipeline()
 	{
 		//TODO: implement
-#error NYI
 	}
 
 	void mainLoop()

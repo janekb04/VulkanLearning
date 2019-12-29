@@ -24,5 +24,17 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
+    <None Include="vertex.vert">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="fragment.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="common.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="compileShaders.bat">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

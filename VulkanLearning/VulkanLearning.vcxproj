@@ -23,7 +23,13 @@
     <ClCompile Include="volk_impl.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="common.glsl" />
+    <None Include="compileShaders.bat">
+      <FileType>Document</FileType>
+    </None>
     <None Include="cpp.hint" />
+    <None Include="fragment.frag" />
+    <None Include="vertex.vert" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -105,6 +111,25 @@
       <AdditionalLibraryDirectories>C:\Users\Jan\Documents\Libraries\glfw-3.3\lib-vc2019;C:\VulkanSDK\1.1.126.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+      <Message>
+      </Message>
+    </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>call compileShaders.bat</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Compile glsl shaders to SPIR-V</Message>
+    </PreBuildEvent>
+    <CustomBuildStep>
+      <Outputs>
+      </Outputs>
+      <Command>
+      </Command>
+      <Message />
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -122,6 +147,25 @@
       <AdditionalLibraryDirectories>C:\Users\Jan\Documents\Libraries\glfw-3.3\lib-vc2019;C:\VulkanSDK\1.1.126.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+      <Message>
+      </Message>
+    </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>call compileShaders.bat</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Compile glsl shaders to SPIR-V</Message>
+    </PreBuildEvent>
+    <CustomBuildStep>
+      <Outputs>
+      </Outputs>
+      <Command>
+      </Command>
+      <Message />
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -143,6 +187,25 @@
       <AdditionalLibraryDirectories>C:\Users\Jan\Documents\Libraries\glfw-3.3\lib-vc2019;C:\VulkanSDK\1.1.126.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+      <Message>
+      </Message>
+    </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>call compileShaders.bat</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Compile glsl shaders to SPIR-V</Message>
+    </PreBuildEvent>
+    <CustomBuildStep>
+      <Outputs>
+      </Outputs>
+      <Command>
+      </Command>
+      <Message />
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -164,6 +227,25 @@
       <AdditionalLibraryDirectories>C:\Users\Jan\Documents\Libraries\glfw-3.3\lib-vc2019;C:\VulkanSDK\1.1.126.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+      <Message>
+      </Message>
+    </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>call compileShaders.bat</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Compile glsl shaders to SPIR-V</Message>
+    </PreBuildEvent>
+    <CustomBuildStep>
+      <Outputs>
+      </Outputs>
+      <Command>
+      </Command>
+      <Message />
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
