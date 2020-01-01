@@ -118,6 +118,7 @@ private:
 	VkRenderPass renderPass;
 	VkPipelineLayout pipelineLayout;
 	VkPipeline graphicsPipeline;
+	std::vector<VkFramebuffer> framebuffers;
 public:
 	virtual void run() override
 	{
@@ -155,6 +156,7 @@ private:
 		createSwapChainImageViews();
 		createRenderPass();
 		createGraphicsPipeline();
+		createFramebuffers();
 	}
 
 	void loadGlobalFunctions()
@@ -928,6 +930,27 @@ private:
 		return shader;
 	}
 
+	void createFramebuffers()
+	{
+		framebuffers.resize(swapChainImageViews.size(), VK_NULL_HANDLE);
+		for (int i = 0; i < framebuffers.size(); ++i)
+		{
+			VkFramebufferCreateInfo createInfo{};
+			createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+			createInfo.renderPass = renderPass;
+			createInfo.attachmentCount = 1;
+			createInfo.pAttachments = &swapChainImageViews[i];
+			createInfo.width = swapChainExtent.width;
+			createInfo.height = swapChainExtent.height;
+			createInfo.layers = 1;
+			
+			if (vkCreateFramebuffer(device, &createInfo, nullptr, &framebuffers[i]) != VK_SUCCESS)
+			{
+				throw std::runtime_error("failed to create frambuffer");
+			}
+		}
+	}
+
 	void mainLoop()
 	{
 		while (!glfwWindowShouldClose(window))
@@ -938,6 +961,11 @@ private:
 
 	void cleanup()
 	{
+		for (const auto& framebuffer : framebuffers)
+		{
+			vkDestroyFramebuffer(device, framebuffer, nullptr);
+		}
+		
 		vkDestroyPipeline(device, graphicsPipeline, nullptr);
 		vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 		vkDestroyRenderPass(device, renderPass, nullptr);
