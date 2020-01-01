@@ -117,6 +117,7 @@ private:
 	std::vector<VkImageView> swapChainImageViews;
 	VkRenderPass renderPass;
 	VkPipelineLayout pipelineLayout;
+	VkPipeline graphicsPipeline;
 public:
 	virtual void run() override
 	{
@@ -858,6 +859,32 @@ private:
 
 		createPipelineLayout();
 
+		VkGraphicsPipelineCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+		createInfo.stageCount = 2;
+		createInfo.pStages = shaderStages;
+		createInfo.pVertexInputState = &vertexInputInfo;
+		createInfo.pInputAssemblyState = &inputAssembly;
+		createInfo.pViewportState = &viewportState;
+		createInfo.pRasterizationState = &rasterizer;
+		createInfo.pMultisampleState = &multisampling;
+		createInfo.pDepthStencilState = nullptr;
+		createInfo.pColorBlendState = &colorBlending;
+		createInfo.pDynamicState = nullptr;
+		createInfo.layout = pipelineLayout;
+		createInfo.renderPass = renderPass;
+		createInfo.subpass = 0;
+		createInfo.basePipelineHandle = VK_NULL_HANDLE;
+		createInfo.basePipelineIndex = -1;
+
+		if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &createInfo, nullptr, &graphicsPipeline) != VK_SUCCESS)
+		{
+			vkDestroyShaderModule(device, vertexShader, nullptr);
+			vkDestroyShaderModule(device, fragmentShader, nullptr);
+
+			throw std::runtime_error("failed to create graphics pipeline");
+		}
+
 		vkDestroyShaderModule(device, vertexShader, nullptr);
 		vkDestroyShaderModule(device, fragmentShader, nullptr);
 	}
@@ -911,6 +938,7 @@ private:
 
 	void cleanup()
 	{
+		vkDestroyPipeline(device, graphicsPipeline, nullptr);
 		vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 		vkDestroyRenderPass(device, renderPass, nullptr);
 		
