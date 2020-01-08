@@ -119,6 +119,8 @@ private:
 	VkPipelineLayout pipelineLayout;
 	VkPipeline graphicsPipeline;
 	std::vector<VkFramebuffer> framebuffers;
+	VkCommandPool commandPool;
+	std::vector<VkCommandBuffer> commandBuffers;
 public:
 	virtual void run() override
 	{
@@ -157,6 +159,8 @@ private:
 		createRenderPass();
 		createGraphicsPipeline();
 		createFramebuffers();
+		createCommandPool();
+		createCommandBuffers();
 	}
 
 	void loadGlobalFunctions()
@@ -951,6 +955,77 @@ private:
 		}
 	}
 
+	void createCommandPool()
+	{
+		VkCommandPoolCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+		createInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+		createInfo.flags = 0;
+		
+		if (vkCreateCommandPool(device, &createInfo, nullptr, &commandPool) != VK_SUCCESS)
+		{
+			throw std::runtime_error("failed to create command pool");
+		}
+	}
+
+	void createCommandBuffers()
+	{
+		allocateCommandBuffers();
+		recordCommandBuffers();
+	}
+
+	void allocateCommandBuffers()
+	{
+		commandBuffers.resize(framebuffers.size());
+
+		VkCommandBufferAllocateInfo allocationInfo{};
+		allocationInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		allocationInfo.commandPool = commandPool;
+		allocationInfo.commandBufferCount = commandBuffers.size();
+		allocationInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+
+		if (vkAllocateCommandBuffers(device, &allocationInfo, commandBuffers.data()) != VK_SUCCESS)
+		{
+			throw std::runtime_error("failed to allocate command buffers");
+		}
+	}
+
+	void recordCommandBuffers()
+	{
+		for (int i = 0; i < commandBuffers.size(); ++i)
+		{
+			beginRecordingCommandBuffer(i);
+			recordCommandBuffer(i);
+			endRecordingCommandBuffer(i);
+		}
+	}
+
+	void beginRecordingCommandBuffer(int i)
+	{
+		VkCommandBufferBeginInfo beginInfo{};
+		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		beginInfo.pInheritanceInfo = nullptr;
+		beginInfo.flags = 0;
+
+		if (vkBeginCommandBuffer(commandBuffers[i], &beginInfo) != VK_SUCCESS)
+		{
+			throw std::runtime_error("failed to start recording command buffer");
+		}
+	}
+
+	void recordCommandBuffer(int i)
+	{
+		//TODO: Record the command buffer
+	}
+
+	void endRecordingCommandBuffer(int i)
+	{
+		if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS)
+		{
+			throw std::runtime_error("failed to stop recording command buffer");
+		}
+	}
+
 	void mainLoop()
 	{
 		while (!glfwWindowShouldClose(window))
@@ -961,6 +1036,8 @@ private:
 
 	void cleanup()
 	{
+		vkDestroyCommandPool(device, commandPool, nullptr);
+
 		for (const auto& framebuffer : framebuffers)
 		{
 			vkDestroyFramebuffer(device, framebuffer, nullptr);
