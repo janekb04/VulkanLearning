@@ -1015,7 +1015,31 @@ private:
 
 	void recordCommandBuffer(int i)
 	{
-		//TODO: Record the command buffer
+		beginCommandBufferRenderPass(i);
+		vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+		vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
+		vkCmdEndRenderPass(commandBuffers[i]);
+	}
+
+	void beginCommandBufferRenderPass(int i)
+	{
+		VkRect2D renderArea{};
+		renderArea.offset = { 0, 0 };
+		renderArea.extent = swapChainExtent;
+
+		VkClearValue clearColor{};
+		clearColor.color = { 0, 0, 0, 1 };
+
+		VkRenderPassBeginInfo renderPassInfo{};
+		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassInfo.renderPass = renderPass;
+		renderPassInfo.framebuffer = framebuffers[i];
+
+		renderPassInfo.renderArea = renderArea;
+		renderPassInfo.clearValueCount = 1;
+		renderPassInfo.pClearValues = &clearColor;
+
+		vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 	}
 
 	void endRecordingCommandBuffer(int i)
@@ -1080,8 +1104,7 @@ int main()
 	catch (const std::exception & e)
 	{
 		std::cerr << e.what() << '\n';
-		return EXIT_FAILURE;
 	}
 
-	return EXIT_SUCCESS;
+	std::cin.get();
 }
