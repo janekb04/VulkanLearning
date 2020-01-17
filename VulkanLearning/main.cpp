@@ -121,6 +121,8 @@ private:
 	std::vector<VkFramebuffer> framebuffers;
 	VkCommandPool commandPool;
 	std::vector<VkCommandBuffer> commandBuffers;
+	VkSemaphore imageAvailbleSemaphore;
+	VkSemaphore renderFinishedSemaphore;
 public:
 	virtual void run() override
 	{
@@ -161,6 +163,7 @@ private:
 		createFramebuffers();
 		createCommandPool();
 		createCommandBuffers();
+		createSemaphores();
 	}
 
 	void loadGlobalFunctions()
@@ -1050,16 +1053,42 @@ private:
 		}
 	}
 
+	void createSemaphores()
+	{
+		VkSemaphoreCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+		createInfo.flags = 0;
+
+		if (vkCreateSemaphore(device, &createInfo, nullptr, &imageAvailbleSemaphore) != VK_SUCCESS)
+		{
+			throw std::runtime_error("failed to create imageAvailble semaphore");
+		}
+		if (vkCreateSemaphore(device, &createInfo, nullptr, &renderFinishedSemaphore) != VK_SUCCESS)
+		{
+			throw std::runtime_error("failed to create renderFinished semaphore");
+		}
+	}
+
 	void mainLoop()
 	{
 		while (!glfwWindowShouldClose(window))
 		{
 			glfwPollEvents();
+			drawFrame();
 		}
+	}
+
+	void drawFrame()
+	{
+		uint32_t imageIndex;
+		vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailbleSemaphore, VK_NULL_HANDLE, &imageIndex);
 	}
 
 	void cleanup()
 	{
+		vkDestroySemaphore(device, renderFinishedSemaphore, nullptr);
+		vkDestroySemaphore(device, imageAvailbleSemaphore, nullptr);
+
 		vkDestroyCommandPool(device, commandPool, nullptr);
 
 		for (const auto& framebuffer : framebuffers)
